@@ -22,6 +22,7 @@ services:
   order-service:
     depends_on:
       - polar-postgres
+      - polar-rabbitmq
     image: "order-service"
     container_name: "order-service"
     ports:
@@ -34,12 +35,29 @@ services:
       - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
       - SPRING_R2DBC_URL=r2dbc:postgresql://polar-postgres:5432/polardb_order
       - SPRING_FLYWAY_URL=jdbc:postgresql://polar-postgres:5432/polardb_order
+      - SPRING_RABBITMQ_HOST=polar-rabbitmq
     networks:
       - network-polar
+
+  dispatcher-service:
+    depends_on:
+      - polar-rabbitmq
+    image: "dispatcher-service"
+    container_name: "dispatcher-service"
+    ports:
+      - "9003:9003"
+      - "8003:8003"
+    environment:
+      - BPL_DEBUG_ENABLED=true
+      - BPLG_DEBUG_PORT=8003
+      - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
+      - SRPING_RABBITMQ_HOST=polar-rabbitmq
 
   edge-service:
     depends_on:
       - polar-redis
+      - polar-keycloak
+      - polar-ui
     image: "edge-service"
     container_name: "edge-service"
     ports:
@@ -53,6 +71,7 @@ services:
       - ORDER_SERVICE_URL=http://order-service:9002
       - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
       - SPRING_REDIS_HOST=polar-redis
+      - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI=http://host.docker.internal:8080/realms/PolarBookshop
     networks:
       - network-polar
 
@@ -66,6 +85,16 @@ services:
       - BPL_JVM_THREAD_COUNT=50
       - BPL_DEBUG_ENABLED=true
       - BPL_DEBUG_PORT=9888
+    networks:
+      - network-polar
+
+  polar-ui:
+    image: "ghcr.io/polarbookshop/polar-ui:v1"
+    container_name: "polar-ui"
+    ports:
+      - "9004:9004"
+    environment:
+      - PORT=9004
     networks:
       - network-polar
 
@@ -89,6 +118,31 @@ services:
       - "6379:6379"
     networks:
       network-polar:
+
+  polar-rabbitmq:
+    image: "rabbitmq:4.1.0-management"
+    container_name: "polar-rabbitmq"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+    networks:
+      - network-polar
+
+  polar-keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    container_name: "polar-keycloak"
+    command: start-dev --import-realm
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import
+    environment:
+      - KEYCLOAK_ADMIN=user
+      - KEYCLOAK_ADMIN_PASSWORD=password
+    ports:
+      - "8080:8080"
+    networks:
+      - network-polar
 
 networks:
   network-polar:
