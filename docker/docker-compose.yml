@@ -1,6 +1,8 @@
 version: "3.8"
 services:
 
+  # Applications
+
   catalog-service:
     depends_on:
       - polar-postgres
@@ -10,14 +12,16 @@ services:
       - "9001:9001"
       - "8001:8001"
     environment:
+      # Buildpacks environment variable to configure the number of threads in memory calculation
       - BPL_JVM_THREAD_COUNT=50
+      # Buildpacks environment variable to enable debug through a socket on port 8001
       - BPL_DEBUG_ENABLED=true
       - BPL_DEBUG_PORT=8001
       - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
       - SPRING_DATASOURCE_URL=jdbc:postgresql://polar-postgres:5432/polardb_catalog
       - SPRING_PROFILES_ACTIVE=testdata
     networks:
-      - network-polar
+      - polar-network
 
   order-service:
     depends_on:
@@ -29,6 +33,7 @@ services:
       - "9002:9002"
       - "8002:8002"
     environment:
+      # Buildpacks environment variable to enable debug through a socket on port 8002
       - BPL_DEBUG_ENABLED=true
       - BPL_DEBUG_PORT=8002
       - POLAR_CATALOG_SERVICE_URI=http://catalog-service:9001
@@ -37,26 +42,29 @@ services:
       - SPRING_FLYWAY_URL=jdbc:postgresql://polar-postgres:5432/polardb_order
       - SPRING_RABBITMQ_HOST=polar-rabbitmq
     networks:
-      - network-polar
+      - polar-network
 
   dispatcher-service:
     depends_on:
       - polar-rabbitmq
     image: "dispatcher-service"
-    container_name: "dispatcher-service"
+    container_name: dispatcher-service
     ports:
       - "9003:9003"
       - "8003:8003"
     environment:
+      # Buildpacks environment variable to enable debug through a socket on port 8002
       - BPL_DEBUG_ENABLED=true
-      - BPLG_DEBUG_PORT=8003
+      - BPL_DEBUG_PORT=8003
       - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
-      - SRPING_RABBITMQ_HOST=polar-rabbitmq
+      - SPRING_RABBITMQ_HOST=polar-rabbitmq
+    networks:
+      - polar-network
 
   edge-service:
     depends_on:
-      - polar-redis
       - polar-keycloak
+      - polar-redis
       - polar-ui
     image: "edge-service"
     container_name: "edge-service"
@@ -69,11 +77,12 @@ services:
       - BPL_DEBUG_PORT=8000
       - CATALOG_SERVICE_URL=http://catalog-service:9001
       - ORDER_SERVICE_URL=http://order-service:9002
+      - SPA_URL=http://polar-ui:9004
       - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
-      - SPRING_REDIS_HOST=polar-redis
-      - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI=http://host.docker.internal:8080/realms/PolarBookshop
+      - SPRING__DATA_REDIS_HOST=polar-redis
+      - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI=http://polar-keycloak:8080/realms/PolarBookshop
     networks:
-      - network-polar
+      - polar-network
 
   config-service:
     image: "config-service"
@@ -82,11 +91,13 @@ services:
       - "8888:8888"
       - "9888:9888"
     environment:
+      # Buildpacks environment variable to configure the number of threads in memory calculation
       - BPL_JVM_THREAD_COUNT=50
+      # Buildpacks environment variable to enable debug through a socket on port 9888
       - BPL_DEBUG_ENABLED=true
       - BPL_DEBUG_PORT=9888
     networks:
-      - network-polar
+      - polar-network
 
   polar-ui:
     image: "ghcr.io/polarbookshop/polar-ui:v1"
@@ -96,7 +107,9 @@ services:
     environment:
       - PORT=9004
     networks:
-      - network-polar
+      - polar-network
+
+  # Backing Services
 
   polar-postgres:
     image: "postgres:14.12"
@@ -109,7 +122,7 @@ services:
     volumes:
       - ./postgresql/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - network-polar
+      - polar-network
 
   polar-redis:
     image: "redis:7.2"
@@ -117,18 +130,18 @@ services:
     ports:
       - "6379:6379"
     networks:
-      network-polar:
+      - polar-network
 
   polar-rabbitmq:
-    image: "rabbitmq:4.1.0-management"
-    container_name: "polar-rabbitmq"
+    image: rabbitmq:3.13-management
+    container_name: polar-rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
     volumes:
       - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
     networks:
-      - network-polar
+      - polar-network
 
   polar-keycloak:
     image: quay.io/keycloak/keycloak:24.0
@@ -142,7 +155,8 @@ services:
     ports:
       - "8080:8080"
     networks:
-      - network-polar
+      - polar-network
+
 
 networks:
-  network-polar:
+  polar-network:
