@@ -62,7 +62,7 @@ metadata:
   labels:
     app: polar-keycloak
 spec:
-  type: ClusterIP'
+  type: ClusterIP
   selector:
     app: polar-keycloak
   ports:
