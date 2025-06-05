@@ -8,7 +8,7 @@ deleteDatasources:
 datasources:
   - name: Prometheus
     type: prometheus
-    uid: prometheus-erick-silva
+    uid: prometheus-thomas-vitale
     access: proxy
     orgId: 1
     url: http://prometheus:9090
@@ -18,7 +18,7 @@ datasources:
     editable: true
   - name: Tempo
     type: tempo
-    uid: tempo-erick-silva
+    uid: tempo-thomas-vitale
     access: proxy
     orgId: 1
     url: http://tempo:3100
@@ -29,7 +29,7 @@ datasources:
     jsonData:
       httpMethod: GET
       tracesToLogs:
-        datasourceUid: 'loki-erick-silva'
+        datasourceUid: 'loki-thomas-vitale'
         tags: [ 'instance', 'pod', 'namespace', 'hostname' ]
         mappedTags: [ { key: 'service.name', value: 'application' }  ]
         mapTagNamesEnabled: true
@@ -39,16 +39,16 @@ datasources:
         filterBySpanID: false
         lokiSearch: true
       lokiSearch:
-        datasourceUid: 'loki-erick-silva'
+        datasourceUid: 'loki-thomas-vitale'
       serviceMap:
-        datasourceUid: 'prometheus-erick-silva'
+        datasourceUid: 'prometheus-thomas-vitale'
       search:
         hide: false
       nodeGraph:
         enabled: true
   - name: Loki
     type: loki
-    uid: loki-erick-silva
+    uid: loki-thomas-vitale
     access: proxy
     orgId: 1
     url: http://loki:3100
@@ -58,7 +58,7 @@ datasources:
     editable: true
     jsonData:
       derivedFields:
-        - datasourceUid: tempo-erick-silva
+        - datasourceUid: tempo-thomas-vitale
           matcherRegex: \[.+,(.+?),
           name: TraceID
           url: $${__value.raw}
