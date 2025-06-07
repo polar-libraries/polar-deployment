@@ -10,6 +10,10 @@ patchesStrategicMerge:
 - patch-volume.yml
 
 configMapGenerator:
+  - behavior: merge
+    files:
+      - application-prod.yml
+    name: catalog-config
 - behavior: merge
   files:
   - application-prod.yml
@@ -24,5 +28,7 @@ images:
   newTag: 77dd2eaf719a5559fc71ac4e3689a6a3d16a2a7a
 
 replicas:
+  - count: 2
+    name: catalog-service
 - count: 2
   name: catalog-service

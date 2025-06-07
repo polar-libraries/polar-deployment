@@ -1,14 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: catalog-service
+  name: order-service
 spec:
   template:
     spec:
       containers:
-        - name: catalog-service
+        - name: order-service
           resources:
-            request:
+            requests:
               memory: 756Mi
               cpu: "0.1"
             limits:
