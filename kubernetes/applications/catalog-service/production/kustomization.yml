@@ -13,7 +13,7 @@ configMapGenerator:
   - behavior: merge
     files:
       - application-prod.yml
-    name: catalog-
+    name: catalog-config
 
 images:
   - name: ' catalog-service'
@@ -21,5 +21,5 @@ images:
     newTag: 71fab25064f9f37fccfb9af42899740222fc9103
 
 replicas:
-  - name: catalog-service
-    count: 2
+  - count: 2
+    name: catalog-service
