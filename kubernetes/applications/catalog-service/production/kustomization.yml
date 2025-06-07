@@ -2,24 +2,27 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - github.com/polar-libraries/catalog-service/k8s?ref=71fab25064f9f37fccfb9af42899740222fc9103
+- github.com/polar-libraries/catalog-service/k8s?ref=71fab25064f9f37fccfb9af42899740222fc9103
 
 patchesStrategicMerge:
-  - patch-env.yml
-  - patch-resources.yml
-  - patch-volume.yml
+- patch-env.yml
+- patch-resources.yml
+- patch-volume.yml
 
 configMapGenerator:
-  - behavior: merge
-    files:
-      - application-prod.yml
-    name: catalog-
+- behavior: merge
+  files:
+  - application-prod.yml
+  name: catalog-
 
 images:
-  - name: ' catalog-service'
-    newName: ghcr.io/polar-libraries/catalog-service
-    newTag: 71fab25064f9f37fccfb9af42899740222fc9103
+- name: ' catalog-service'
+  newName: ghcr.io/polar-libraries/catalog-service
+  newTag: 71fab25064f9f37fccfb9af42899740222fc9103
+- name: catalog-service
+  newName: ghcr.io/polar-libraries/catalog-service
+  newTag: 77dd2eaf719a5559fc71ac4e3689a6a3d16a2a7a
 
 replicas:
-  - name: catalog-service
-    count: 2
+- count: 2
+  name: catalog-service
