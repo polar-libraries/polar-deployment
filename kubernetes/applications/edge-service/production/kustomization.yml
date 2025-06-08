@@ -24,3 +24,24 @@ images:
 replicas:
   - count: 1
     name: edge-service
+
+patchesStrategicMerge:
+- patch-ingress.yml
+- patch-env.yml
+- patch-resources.yml
+- patch-volumes.yml
+
+configMapGenerator:
+- behavior: merge
+  files:
+  - application-prod.yml
+  name: edge-config
+
+images:
+- name: edge-service
+  newName: ghcr.io/polar-libraries/edge-service
+  newTag: f01770fdda6d9cdc8a2fe9f5954dd13ab175159f
+
+replicas:
+- count: 1
+  name: edge-service
