@@ -2,7 +2,28 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-- github.com/polar-libraries/edge-service/k8s?ref=main
+  - github.com/polar-libraries/edge-service/k8s?ref=main
+
+patchesStrategicMerge:
+  - patch-ingress.yml
+  - patch-env.yml
+  - patch-resources.yml
+  - patch-volumes.yml
+
+configMapGenerator:
+  - behavior: merge
+    files:
+      - application-prod.yml
+    name: edge-config
+
+images:
+  - name: edge-service
+    newName: ghcr.io/polar-libraries/edge-service
+    newTag: latest
+
+replicas:
+  - count: 1
+    name: edge-service
 
 patchesStrategicMerge:
 - patch-ingress.yml
